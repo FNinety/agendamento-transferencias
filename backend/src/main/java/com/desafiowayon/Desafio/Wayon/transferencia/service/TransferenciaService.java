@@ -11,11 +11,18 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+/** created by @FNinety
+ * Service responsável regras de negócio de agendamento de transferencias e busca de transferencias agendadas.
+ */
 @Service
 public class TransferenciaService {
     @Autowired
     private TransferenciaRepository transferenciaRepository;
 
+    /**
+     * Calcula a taxa baseada na diferença de dias entre agendamento(data atual) e realização da tranferencia.
+     * @throws  BusinessException se data for maior que 50 dias ou no passado.
+     */
     public Transferencia calcularTaxa(Transferencia transferencia) {
         transferencia.setDataAgendamento(LocalDate.now());
         long dias = ChronoUnit.DAYS.between(transferencia.getDataAgendamento(), transferencia.getDataTransferencia());
@@ -24,9 +31,9 @@ public class TransferenciaService {
             throw new BusinessException("Não há taxa aplicável para transações no passado. Por favor informe uma data igual a hoje ou no futuro");
         }
         if (dias == 0) {
-            taxa = transferencia.getValor().multiply(new BigDecimal("0.025")).add(new BigDecimal("3.00"));
+            taxa = transferencia.getValor().multiply(new BigDecimal("0.025"));
         } else if (dias >= 1 && dias <= 10) {
-            taxa = new BigDecimal("12.00");
+            taxa = new BigDecimal("0.00");
         } else if (dias >= 11 && dias <= 20) {
             taxa = transferencia.getValor().multiply(new BigDecimal("0.082"));
         } else if (dias >= 21 && dias <= 30) {
@@ -42,6 +49,9 @@ public class TransferenciaService {
         return transferenciaRepository.save(transferencia);
     }
 
+    /**
+     * Busca todas as transferencias no banco de dados
+     */
     public List<Transferencia> buscarTransferencias() {
         return transferenciaRepository.findAll();
     }
